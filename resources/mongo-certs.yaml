@@ -1,0 +1,107 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: mongo-ca-issuer
+  namespace: mongodb
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mongo-cert-ca
+  namespace: mongodb
+spec:
+  commonName: mongo.sharptree.app
+  duration: 175200h0m0s
+  isCA: true
+  issuerRef:
+    kind: Issuer
+    name: mongo-ca-issuer
+  renewBefore: 87600h0m0s
+  secretName: mongo-cert-ca
+  subject:
+    countries:
+      - US
+    provinces:
+      - Washington       
+    localities:
+      - Seattle
+    organizationalUnits:
+      - Sharptree CA
+    organizations:
+      - Sharptree
+  usages:
+    - cert sign
+---  
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:    
+  name: mongo-issuer
+  namespace: mongodb
+  labels:
+    app.kubernetes.io/instance: mongo-issuer
+    app.kubernetes.io/name: mongo-issuer
+spec:
+  ca:
+    secretName: mongo-cert-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mongo-ibm-sls
+  namespace: mongodb
+spec:
+  dnsNames:
+    - ibm-sls-0.ibm-sls-svc.mongodb.svc.cluster.local
+    - ibm-sls-1.ibm-sls-svc.mongodb.svc.cluster.local
+    - ibm-sls-2.ibm-sls-svc.mongodb.svc.cluster.local
+  duration: 87600h0m0s
+  issuerRef:
+    kind: Issuer
+    name: mongo-issuer
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  renewBefore: 360h0m0s
+  secretName: ibm-sls-mongo-tls
+  subject:
+    countries:
+      - US
+    localities:
+      - Seattle
+    organizations:
+      - Sharptree
+    provinces:
+      - Washington
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mongo-ibm-mas
+  namespace: mongodb
+spec:
+  dnsNames:
+    - ibm-mas-0.ibm-mas-svc.mongodb.svc.cluster.local
+    - ibm-mas-1.ibm-mas-svc.mongodb.svc.cluster.local
+    - ibm-mas-2.ibm-mas-svc.mongodb.svc.cluster.local
+  duration: 87600h0m0s
+  issuerRef:
+    kind: Issuer
+    name: mongo-issuer
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  renewBefore: 360h0m0s
+  secretName: ibm-mas-mongo-tls
+  subject:
+    countries:
+      - US
+    localities:
+      - Seattle
+    organizations:
+      - Sharptree
+    provinces:
+      - Washington      
